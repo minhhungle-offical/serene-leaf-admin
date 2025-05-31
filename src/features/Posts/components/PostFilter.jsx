@@ -3,10 +3,10 @@ import { SortField } from '@/components/FormFields/SortField'
 import { Box, Stack } from '@mui/material'
 
 export function PostFilter({ params, categoryList, onFilterChange }) {
-  function handleSearchChange(value) {
+  function handleSearchChange(search) {
     const newParams = {
       ...params,
-      searchKey: value,
+      search,
     }
     onFilterChange?.(newParams)
   }
