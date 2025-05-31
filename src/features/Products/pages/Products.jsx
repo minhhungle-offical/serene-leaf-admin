@@ -36,7 +36,7 @@ export default function Products() {
   const dispatch = useDispatch()
 
   const formData = useRef(null)
-  const { filter, status, resId, data, total } = useSelector((state) => state.product)
+  const { filter, status, data, total } = useSelector((state) => state.product)
   const { data: categoryList } = useSelector((state) => state.category)
   const { enqueueSnackbar } = useSnackbar()
 
@@ -52,7 +52,7 @@ export default function Products() {
   }, [filter])
 
   useEffect(() => {
-    if (status === 'created' && resId) {
+    if (status === 'created') {
       enqueueSnackbar('create product success', { variant: 'success' })
       dispatch(productGetAll(filter))
       dispatch(productActions.resetStatus())
@@ -71,7 +71,7 @@ export default function Products() {
       dispatch(productGetAll(filter))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, resId])
+  }, [status])
 
   const handleAddProduct = () => {
     setOpenAddEdit(true)

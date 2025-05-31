@@ -1,3 +1,4 @@
+import { postActions, postAdd, postEdit, postGetAll, postRemove } from '@/stores/slices/postSlice'
 import { Add } from '@mui/icons-material'
 import {
   Box,
@@ -8,6 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Link,
   Stack,
   Typography,
@@ -15,25 +17,20 @@ import {
 import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { AddEditCategoryForm } from '../components/AddEditCategoryForm'
-import { CategoryList } from '../components/CategoryList'
-import {
-  categoryActions,
-  categoryAdd,
-  categoryEdit,
-  categoryGetAll,
-  categoryRemove,
-} from '@/stores/slices/categorySlice'
+import { AddEditPostForm } from '../components/AddEditPostForm'
+import { PostFilter } from '../components/PostFilter'
+import { PostList } from '../components/PostList'
 
-export default function Categories() {
+export default function Posts() {
   const [openAddEdit, setOpenAddEdit] = useState(false)
   const [currentData, setCurrentData] = useState(null)
   const [removeData, setRemoveData] = useState(null)
 
   const dispatch = useDispatch()
 
-  const formData = useRef(null)
-  const { filter, status, resId, data } = useSelector((state) => state.category)
+  const formRef = useRef(null)
+  const { filter, status, data, total } = useSelector((state) => state.post)
+  const { data: categoryList } = useSelector((state) => state.postCategory)
   const { enqueueSnackbar } = useSnackbar()
 
   const handleCancel = () => {
@@ -43,56 +40,61 @@ export default function Categories() {
   }
 
   useEffect(() => {
+    dispatch(postGetAll(filter))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter])
+
+  useEffect(() => {
     if (status === 'created') {
-      enqueueSnackbar('create product success', { variant: 'success' })
-      dispatch(categoryGetAll(filter))
-      dispatch(categoryActions.resetStatus())
+      enqueueSnackbar('Create post success', { variant: 'success' })
+      dispatch(postGetAll(filter))
+      dispatch(postActions.resetStatus())
       handleCancel()
     }
 
     if (status === 'updated') {
-      enqueueSnackbar('Update product success', { variant: 'success' })
-      dispatch(categoryActions.resetStatus())
-      dispatch(categoryGetAll(filter))
+      enqueueSnackbar('Update post success', { variant: 'success' })
+      dispatch(postActions.resetStatus())
+      dispatch(postGetAll(filter))
       handleCancel()
     }
 
     if (status === 'removed') {
+      enqueueSnackbar('Remove post success', { variant: 'success' })
+      dispatch(postGetAll(filter))
       handleCancel()
-      dispatch(categoryGetAll(filter))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, resId])
+  }, [status])
 
-  const handleAddProduct = () => {
+  const handleAddPost = () => {
     setOpenAddEdit(true)
     setCurrentData(null)
   }
 
-  const handleEditProduct = (data) => {
+  const handleEditPost = (data) => {
     setOpenAddEdit(true)
     setCurrentData(data)
   }
 
   const handleSubmit = (formData) => {
     if (currentData) {
-      dispatch(categoryEdit({ id: currentData._id, data: formData }))
+      dispatch(postEdit({ id: currentData._id, data: formData }))
       return
     }
-
-    dispatch(categoryAdd(formData))
+    dispatch(postAdd(formData))
   }
 
   const handleFilterChange = (newFilter) => {
-    console.log('newFilter: ', newFilter)
-    dispatch(categoryActions.setFilter(newFilter))
+    dispatch(postActions.setFilter(newFilter))
   }
 
   const handleRemove = (data) => {
     setRemoveData(data)
   }
+
   const handleRemoveConfirm = (id) => {
-    dispatch(categoryRemove(id))
+    dispatch(postRemove(id))
   }
 
   return (
@@ -103,19 +105,14 @@ export default function Categories() {
             <Link underline="hover" color="inherit" href="/">
               Dashboard
             </Link>
-            <Typography color="text.primary">Category</Typography>
+            <Typography color="text.primary">Posts</Typography>
           </Breadcrumbs>
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" fontWeight="bold" sx={{ m: 0 }}>
-              Categories
+              Posts
             </Typography>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<Add />}
-              onClick={handleAddProduct}
-            >
+            <Button variant="contained" color="success" startIcon={<Add />} onClick={handleAddPost}>
               Add new
             </Button>
           </Stack>
@@ -129,35 +126,58 @@ export default function Categories() {
             overflow: 'hidden',
           }}
         >
+          <Box sx={{ px: 2, py: 1 }}>
+            <PostFilter
+              params={filter}
+              onFilterChange={handleFilterChange}
+              categoryList={categoryList?.map((item) => ({
+                value: item._id,
+                label: item.name,
+              }))}
+            />
+          </Box>
+
+          <Divider />
+
           <Box>
-            <CategoryList
+            <PostList
               loading={status === 'loading'}
               data={data}
+              total={total}
               params={filter}
-              onEdit={handleEditProduct}
+              onEdit={handleEditPost}
               onRemove={handleRemove}
               onPaginationModelChange={handleFilterChange}
+              categoryList={categoryList || []}
             />
           </Box>
         </Box>
 
         <Dialog fullWidth maxWidth="md" open={!!removeData || openAddEdit}>
           <DialogTitle variant="h5" fontWeight={600}>
-            {removeData ? 'Confirm deletion' : currentData ? 'Update product' : 'Create product'}
+            {removeData ? 'Confirm deletion' : currentData ? 'Update post' : 'Create post'}
           </DialogTitle>
 
           <DialogContent dividers>
             {removeData ? (
               <Box>
                 <Typography variant="body1">
-                  Are you sure you want to delete <strong>{removeData.name}</strong>?
+                  Are you sure you want to delete <strong>{removeData.title}</strong>?
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mt={1}>
                   This action cannot be undone.
                 </Typography>
               </Box>
             ) : (
-              <AddEditCategoryForm ref={formData} onSubmit={handleSubmit} data={currentData} />
+              <AddEditPostForm
+                ref={formRef}
+                onSubmit={handleSubmit}
+                data={currentData}
+                categoryList={categoryList?.map((item) => ({
+                  value: item._id,
+                  label: item.name,
+                }))}
+              />
             )}
           </DialogContent>
 
@@ -185,7 +205,7 @@ export default function Categories() {
                 color="info"
                 variant="contained"
                 disabled={status === 'loading'}
-                onClick={() => formData?.current?.submit()}
+                onClick={() => formRef?.current?.submit()}
               >
                 {currentData ? 'Save' : 'Create'}
               </Button>

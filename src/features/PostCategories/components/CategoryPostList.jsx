@@ -1,14 +1,11 @@
-import { Edit, Delete } from '@mui/icons-material'
-import { Box, Chip, Paper, Stack, Tooltip, Typography, alpha } from '@mui/material'
+import { Delete, Edit } from '@mui/icons-material'
+import { Box, Chip, Stack, Tooltip, Typography, alpha } from '@mui/material'
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid'
-import { numberToCurrencyUSD } from '@/utils/common'
 
-export function ProductList({
+export function PostCategoryList({
   params = { page: 1, limit: 5 },
   data,
-  total,
   loading,
-  categoryList = [],
   onPaginationModelChange,
   onEdit,
   onRemove,
@@ -20,85 +17,45 @@ export function ProductList({
     headerClassName: 'header',
   }
 
-  const rows = data?.map((item, idx) => ({
-    key: (params.page - 1) * params.limit + idx + 1,
-    ...item,
-  }))
+  const rows =
+    data?.map((item, idx) => ({
+      key: (params.page - 1) * params.limit + idx + 1,
+      ...item,
+    })) || []
 
   const columns = [
     {
       field: 'key',
       headerName: '#',
       width: 60,
-      headerAlign: 'center',
       align: 'center',
+      headerAlign: 'center',
       ...baseColProps,
     },
     {
-      field: 'product',
-      headerName: 'Product',
-      minWidth: 700,
-      flex: 2,
+      field: 'name',
+      headerName: 'Category Name',
+      minWidth: 150,
+
       ...baseColProps,
       renderCell: ({ row }) => (
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ height: '100%', py: 1 }}>
-          <Box
-            component="img"
-            src={row.image?.url}
-            alt={row.name}
-            sx={{
-              width: '80px',
-              aspectRatio: '1/1',
-              borderRadius: 2,
-              objectFit: 'cover',
-              boxShadow: 1,
-            }}
-          />
-          <Box>
-            <Typography fontWeight={600}>{row.name}</Typography>
-            <Typography whiteSpace="wrap" variant="body2" color="text.secondary">
-              {row.shortDescription}
-            </Typography>
-          </Box>
+        <Stack justifyContent="center" sx={{ height: '100%', py: 1 }}>
+          <Typography fontWeight={600}>{row.name}</Typography>
         </Stack>
       ),
     },
     {
-      field: 'price',
-      headerName: 'Price',
-      width: 150,
-      align: 'center',
-      headerAlign: 'center',
+      field: 'description',
+      headerName: 'Description',
+      minWidth: 600,
+      flex: 2,
       ...baseColProps,
       renderCell: ({ row }) => (
-        <Chip
-          size="small"
-          label={numberToCurrencyUSD(row.price)}
-          sx={{
-            fontWeight: 600,
-            color: (theme) => theme.palette.warning.main,
-            bgcolor: (theme) => alpha(theme.palette.warning.main, 0.1),
-          }}
-        />
-      ),
-    },
-    {
-      field: 'category',
-      headerName: 'Category',
-      width: 150,
-      align: 'center',
-      headerAlign: 'center',
-      ...baseColProps,
-      renderCell: ({ row }) => (
-        <Chip
-          size="small"
-          label={categoryList?.find((item) => item._id === row.category)?.name || ''}
-          sx={{
-            fontWeight: 600,
-            color: (theme) => theme.palette.info.main,
-            bgcolor: (theme) => alpha(theme.palette.info.main, 0.1),
-          }}
-        />
+        <Stack justifyContent="center" sx={{ height: '100%', py: 1 }}>
+          <Typography whiteSpace="wrap" variant="body2" color="text.secondary">
+            {row.description}
+          </Typography>
+        </Stack>
       ),
     },
     {
@@ -154,12 +111,10 @@ export function ProductList({
   ]
 
   const handlePaginationModelChange = (model) => {
-    const newParams = {
-      ...params,
-      page: model.page + 1,
+    onPaginationModelChange?.({
+      page: model.page + 1, // DataGrid uses 0-indexed pages
       limit: model.pageSize,
-    }
-    onPaginationModelChange?.(newParams)
+    })
   }
 
   return (
@@ -187,16 +142,16 @@ export function ProductList({
       <DataGrid
         loading={loading}
         rows={rows || []}
-        getRowId={(row) => row._id}
+        getRowId={(row) => row?._id}
         columns={columns}
         rowHeight={100}
         disableRowSelectionOnClick
         pagination
-        paginationMode="server"
-        rowCount={total || 0}
+        paginationMode="client"
+        // rowCount={rows?.length || 0}
         paginationModel={{
-          page: params?.page - 1 || 0,
-          pageSize: params?.limit || 10,
+          page: (params.page || 1) - 1, // Convert to 0-based
+          pageSize: params.limit || 5,
         }}
         onPaginationModelChange={handlePaginationModelChange}
         pageSizeOptions={[5, 10, 25, 50]}

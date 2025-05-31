@@ -15,8 +15,8 @@ import { useController } from 'react-hook-form'
 
 export function UploadImageField({ name, control, label, disabled = false }) {
   const inputRef = useRef(null)
-  const [loading, setLoading] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [removing, setRemoving] = useState(false)
 
   const {
     field: { value, onChange },
@@ -28,21 +28,24 @@ export function UploadImageField({ name, control, label, disabled = false }) {
 
   const handleSelectFile = async (event) => {
     const file = event.target.files?.[0]
-    if (!file) return
+    if (!file || uploading) return
 
     const formData = new FormData()
     formData.append('image', file)
 
     try {
-      setLoading(true)
-      const res = await uploadApi.upload(formData)
+      setUploading(true)
+      const res = await uploadApi.singleUpload(formData)
+
+      console.log('res: ', res)
       if (res?.url) {
         onChange({ url: res.url, publicId: res.publicId })
       }
     } catch (err) {
-      console.error('Lỗi upload ảnh:', err)
+      console.error('Image upload error:', err)
     } finally {
-      setLoading(false)
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
@@ -54,14 +57,14 @@ export function UploadImageField({ name, control, label, disabled = false }) {
     }
 
     try {
-      setDeleting(true)
+      setRemoving(true)
       await uploadApi.removeImage(value.publicId)
       onChange(null)
-      if (inputRef.current) inputRef.current.value = ''
     } catch (error) {
-      console.error('Lỗi xoá ảnh:', error)
+      console.error('Image removal error:', error)
     } finally {
-      setDeleting(false)
+      setRemoving(false)
+      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
@@ -79,7 +82,7 @@ export function UploadImageField({ name, control, label, disabled = false }) {
             <Box
               component="img"
               src={value.url}
-              alt="uploaded"
+              alt="Uploaded"
               sx={{
                 width: 200,
                 objectFit: 'cover',
@@ -91,15 +94,17 @@ export function UploadImageField({ name, control, label, disabled = false }) {
             <IconButton
               size="small"
               onClick={handleRemoveImage}
-              disabled={deleting}
+              disabled={removing}
               sx={{
                 position: 'absolute',
                 top: 4,
                 right: 4,
                 color: 'white',
+                backgroundColor: 'rgba(0,0,0,0.4)',
+                '&:hover': { backgroundColor: 'rgba(0,0,0,0.6)' },
               }}
             >
-              {deleting ? (
+              {removing ? (
                 <CircularProgress size={18} sx={{ color: 'white' }} />
               ) : (
                 <CloseIcon fontSize="small" />
@@ -111,7 +116,7 @@ export function UploadImageField({ name, control, label, disabled = false }) {
             <Button
               component="label"
               startIcon={<PhotoCameraIcon />}
-              disabled={disabled || loading}
+              disabled={disabled || uploading}
               sx={{
                 width: 200,
                 p: 2,
@@ -121,14 +126,14 @@ export function UploadImageField({ name, control, label, disabled = false }) {
                 aspectRatio: 3 / 2,
               }}
             >
-              {loading ? 'Đang tải...' : 'Chọn ảnh'}
+              {uploading ? 'Uploading...' : 'Select image'}
               <input
                 ref={inputRef}
                 type="file"
                 accept="image/*"
                 hidden
                 onChange={handleSelectFile}
-                disabled={disabled || loading}
+                disabled={disabled || uploading}
               />
             </Button>
           </Box>

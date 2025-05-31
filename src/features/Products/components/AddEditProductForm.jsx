@@ -1,6 +1,7 @@
 import { InputField } from '@/components/FormFields/InputField'
 import { SelectField } from '@/components/FormFields/SelectField'
 import { UploadField } from '@/components/FormFields/UploadField'
+import { UploadImageField } from '@/components/FormFields/UploadImageField'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Box, Stack } from '@mui/material'
 import { forwardRef, useImperativeHandle } from 'react'
@@ -36,26 +37,30 @@ export const AddEditProductForm = forwardRef(({ data, onSubmit, categoryList }, 
       category: '',
       shortDescription: '',
       description: '',
-      image: '',
+      image: null,
       price: '',
       quantity: '',
     },
     resolver: yupResolver(schema(!!data)),
   })
 
-  const handleFormSubmit = handleSubmit((formValues) => {
-    const newData = new FormData()
+  const handleFormSubmit = handleSubmit((values) => {
+    const formData = new FormData()
 
-    newData.append('name', formValues.name)
-    newData.append('category', formValues.category)
-    newData.append('shortDescription', formValues.shortDescription)
-    newData.append('description', formValues.description)
-    newData.append('price', parseInt(formValues.price))
-    newData.append('quantity', parseInt(formValues.quantity))
+    for (const key in values) {
+      const value = values[key]
 
-    newData.append('image', formValues.image)
+      if (key === 'image') {
+        if (value instanceof File) {
+          formData.append('image', value)
+        }
+        continue
+      }
 
-    onSubmit?.(newData)
+      formData.append(key, value)
+    }
+
+    onSubmit?.(formData)
   })
 
   useImperativeHandle(ref, () => {
@@ -116,12 +121,7 @@ export const AddEditProductForm = forwardRef(({ data, onSubmit, categoryList }, 
       </Box>
 
       <Box width={2 / 3}>
-        <UploadField
-          name="image"
-          label="Upload Image"
-          control={control}
-          imageUrl={data?.image?.url || ''}
-        />
+        <UploadField name="image" label="Upload Image" control={control} />
       </Box>
     </Stack>
   )

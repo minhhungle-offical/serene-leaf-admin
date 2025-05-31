@@ -1,13 +1,14 @@
 import { Edit, Delete } from '@mui/icons-material'
-import { Box, Chip, Paper, Stack, Tooltip, Typography, alpha } from '@mui/material'
+import { Box, Chip, Stack, Tooltip, Typography, alpha } from '@mui/material'
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid'
-import { numberToCurrencyUSD } from '@/utils/common'
+import dayjs from 'dayjs'
 
-export function ProductList({
+export function PostList({
   params = { page: 1, limit: 5 },
   data,
   total,
   loading,
+
   categoryList = [],
   onPaginationModelChange,
   onEdit,
@@ -35,8 +36,8 @@ export function ProductList({
       ...baseColProps,
     },
     {
-      field: 'product',
-      headerName: 'Product',
+      field: 'post',
+      headerName: 'Post',
       minWidth: 700,
       flex: 2,
       ...baseColProps,
@@ -55,31 +56,12 @@ export function ProductList({
             }}
           />
           <Box>
-            <Typography fontWeight={600}>{row.name}</Typography>
+            <Typography fontWeight={600}>{row.title}</Typography>
             <Typography whiteSpace="wrap" variant="body2" color="text.secondary">
               {row.shortDescription}
             </Typography>
           </Box>
         </Stack>
-      ),
-    },
-    {
-      field: 'price',
-      headerName: 'Price',
-      width: 150,
-      align: 'center',
-      headerAlign: 'center',
-      ...baseColProps,
-      renderCell: ({ row }) => (
-        <Chip
-          size="small"
-          label={numberToCurrencyUSD(row.price)}
-          sx={{
-            fontWeight: 600,
-            color: (theme) => theme.palette.warning.main,
-            bgcolor: (theme) => alpha(theme.palette.warning.main, 0.1),
-          }}
-        />
       ),
     },
     {
@@ -95,11 +77,44 @@ export function ProductList({
           label={categoryList?.find((item) => item._id === row.category)?.name || ''}
           sx={{
             fontWeight: 600,
-            color: (theme) => theme.palette.info.main,
-            bgcolor: (theme) => alpha(theme.palette.info.main, 0.1),
+            color: (theme) => theme.palette.warning.main,
+            bgcolor: (theme) => alpha(theme.palette.warning.main, 0.1),
           }}
         />
       ),
+    },
+    {
+      field: 'author',
+      headerName: 'Author',
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      ...baseColProps,
+      renderCell: ({ row }) => {
+        const author = row?.author || null
+        return (
+          <Chip
+            size="small"
+            label={author ? author.name : 'Unknown'}
+            sx={{
+              fontWeight: 600,
+              color: (theme) => theme.palette.info.main,
+              bgcolor: (theme) => alpha(theme.palette.info.main, 0.1),
+            }}
+          />
+        )
+      },
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Created At',
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      ...baseColProps,
+      valueGetter: ({ value }) => {
+        return dayjs(value).format('MMM DD, YYYY')
+      },
     },
     {
       field: 'isActive',
@@ -111,7 +126,7 @@ export function ProductList({
       renderCell: ({ row }) => (
         <Chip
           size="small"
-          label={row.isActive ? 'Active' : 'Inactive'}
+          label={row.isActive ? 'Publish' : 'Draft'}
           sx={{
             fontWeight: 500,
             color: (theme) =>
@@ -122,6 +137,7 @@ export function ProductList({
         />
       ),
     },
+
     {
       field: 'actions',
       headerName: 'Actions',
@@ -189,7 +205,7 @@ export function ProductList({
         rows={rows || []}
         getRowId={(row) => row._id}
         columns={columns}
-        rowHeight={100}
+        rowHeight={70}
         disableRowSelectionOnClick
         pagination
         paginationMode="server"

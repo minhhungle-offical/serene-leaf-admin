@@ -18,12 +18,12 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 })
 
-export function UploadField({ name, control, label = 'Upload file', imageUrl }) {
+export function UploadField({ name, control, label = 'Upload file' }) {
   const [preview, setPreview] = React.useState('')
   const { enqueueSnackbar } = useSnackbar()
 
   const {
-    field: { onChange },
+    field: { value, onChange },
     fieldState: { error },
   } = useController({
     name,
@@ -76,10 +76,10 @@ export function UploadField({ name, control, label = 'Upload file', imageUrl }) 
             backgroundColor: '#fafafa',
           }}
         >
-          {preview || imageUrl ? (
+          {preview || value?.url ? (
             <Box
               component="img"
-              src={preview || imageUrl}
+              src={preview || value?.url}
               alt="Preview"
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />

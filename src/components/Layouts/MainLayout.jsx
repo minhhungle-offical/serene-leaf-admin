@@ -1,16 +1,17 @@
-import { Box, Stack, Typography } from '@mui/material'
-import { useEffect, useRef } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
-import { NavBar } from '../Common/NavBar'
+import { categoryGetAll } from '@/stores/slices/categorySlice'
+import { postCategoryGetAll } from '@/stores/slices/postCategorySlice'
+import BarChartIcon from '@mui/icons-material/BarChart'
+import CategoryIcon from '@mui/icons-material/Category'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import LocalCafeIcon from '@mui/icons-material/LocalCafe'
-import CategoryIcon from '@mui/icons-material/Category'
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import ArticleIcon from '@mui/icons-material/Article'
 import PeopleIcon from '@mui/icons-material/People'
-import BarChartIcon from '@mui/icons-material/BarChart'
-import SettingsIcon from '@mui/icons-material/Settings'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import { Box, Stack } from '@mui/material'
+import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { categoryGetAll } from '@/stores/slices/categorySlice'
+import { Navigate, useLocation } from 'react-router-dom'
+import { NavBar } from '../Common/NavBar'
 
 const drawerWidth = 240
 
@@ -26,15 +27,16 @@ const navList = [
     href: '/dashboard/analytics',
   },
   {
-    icon: <LocalCafeIcon />,
-    label: 'Products',
-    href: '/dashboard/products',
-  },
-  {
     icon: <CategoryIcon />,
     label: 'Categories',
     href: '/dashboard/categories',
   },
+  {
+    icon: <LocalCafeIcon />,
+    label: 'Products',
+    href: '/dashboard/products',
+  },
+
   {
     icon: <ShoppingCartIcon />,
     label: 'Orders',
@@ -47,9 +49,14 @@ const navList = [
   },
 
   {
-    icon: <SettingsIcon />,
-    label: 'Settings',
-    href: '/dashboard/settings',
+    icon: <ArticleIcon />,
+    label: 'Post',
+    href: '/dashboard/posts',
+  },
+  {
+    icon: <CategoryIcon />,
+    label: 'Post Categories',
+    href: '/dashboard/post-categories',
   },
 ]
 
@@ -62,6 +69,7 @@ export const MainLayout = ({ children }) => {
 
   useEffect(() => {
     dispatch(categoryGetAll())
+    dispatch(postCategoryGetAll())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

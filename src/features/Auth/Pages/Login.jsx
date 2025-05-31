@@ -8,18 +8,20 @@ import { LoginForm } from '../components/LoginForm'
 
 export function Login() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const { enqueueSnackbar } = useSnackbar()
+  const navigate = useNavigate()
 
   const { status, token } = useSelector((state) => state.auth)
 
   useEffect(() => {
-    console.log('status: ', status)
-    if (status === 'logged-in' && token) {
-      localStorage.setItem('token', token)
+    if (status === 'logged-in') {
       enqueueSnackbar('Đăng nhập thành công!', { variant: 'success' })
-      navigate('/dashboard')
       dispatch(authActions.resetStatus())
+    }
+
+    if (token) {
+      localStorage.setItem('token', token)
+      navigate('/dashboard')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, token])

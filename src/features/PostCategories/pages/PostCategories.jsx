@@ -1,3 +1,10 @@
+import {
+  postCategoryActions,
+  postCategoryAdd,
+  postCategoryEdit,
+  postCategoryGetAll,
+  postCategoryRemove,
+} from '@/stores/slices/postCategorySlice'
 import { Add } from '@mui/icons-material'
 import {
   Box,
@@ -15,17 +22,10 @@ import {
 import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { AddEditCategoryForm } from '../components/AddEditCategoryForm'
-import { CategoryList } from '../components/CategoryList'
-import {
-  categoryActions,
-  categoryAdd,
-  categoryEdit,
-  categoryGetAll,
-  categoryRemove,
-} from '@/stores/slices/categorySlice'
+import { AddEditPostCategoryForm } from '../components/AddEditPostCategoryForm'
+import { PostCategoryList } from '../components/CategoryPostList'
 
-export default function Categories() {
+export default function PostCategories() {
   const [openAddEdit, setOpenAddEdit] = useState(false)
   const [currentData, setCurrentData] = useState(null)
   const [removeData, setRemoveData] = useState(null)
@@ -33,7 +33,7 @@ export default function Categories() {
   const dispatch = useDispatch()
 
   const formData = useRef(null)
-  const { filter, status, resId, data } = useSelector((state) => state.category)
+  const { filter, status, resId, data } = useSelector((state) => state.postCategory)
   const { enqueueSnackbar } = useSnackbar()
 
   const handleCancel = () => {
@@ -45,21 +45,21 @@ export default function Categories() {
   useEffect(() => {
     if (status === 'created') {
       enqueueSnackbar('create product success', { variant: 'success' })
-      dispatch(categoryGetAll(filter))
-      dispatch(categoryActions.resetStatus())
+      dispatch(postCategoryGetAll(filter))
+      dispatch(postCategoryActions.resetStatus())
       handleCancel()
     }
 
     if (status === 'updated') {
       enqueueSnackbar('Update product success', { variant: 'success' })
-      dispatch(categoryActions.resetStatus())
-      dispatch(categoryGetAll(filter))
+      dispatch(postCategoryActions.resetStatus())
+      dispatch(postCategoryGetAll(filter))
       handleCancel()
     }
 
     if (status === 'removed') {
       handleCancel()
-      dispatch(categoryGetAll(filter))
+      dispatch(postCategoryGetAll(filter))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, resId])
@@ -76,23 +76,23 @@ export default function Categories() {
 
   const handleSubmit = (formData) => {
     if (currentData) {
-      dispatch(categoryEdit({ id: currentData._id, data: formData }))
+      dispatch(postCategoryEdit({ id: currentData._id, data: formData }))
       return
     }
 
-    dispatch(categoryAdd(formData))
+    dispatch(postCategoryAdd(formData))
   }
 
   const handleFilterChange = (newFilter) => {
     console.log('newFilter: ', newFilter)
-    dispatch(categoryActions.setFilter(newFilter))
+    dispatch(postCategoryActions.setFilter(newFilter))
   }
 
   const handleRemove = (data) => {
     setRemoveData(data)
   }
   const handleRemoveConfirm = (id) => {
-    dispatch(categoryRemove(id))
+    dispatch(postCategoryRemove(id))
   }
 
   return (
@@ -130,7 +130,7 @@ export default function Categories() {
           }}
         >
           <Box>
-            <CategoryList
+            <PostCategoryList
               loading={status === 'loading'}
               data={data}
               params={filter}
@@ -157,7 +157,7 @@ export default function Categories() {
                 </Typography>
               </Box>
             ) : (
-              <AddEditCategoryForm ref={formData} onSubmit={handleSubmit} data={currentData} />
+              <AddEditPostCategoryForm ref={formData} onSubmit={handleSubmit} data={currentData} />
             )}
           </DialogContent>
 
