@@ -8,8 +8,6 @@ export function PostList({
   data,
   total,
   loading,
-
-  categoryList = [],
   onPaginationModelChange,
   onEdit,
   onRemove,
@@ -74,7 +72,7 @@ export function PostList({
       renderCell: ({ row }) => (
         <Chip
           size="small"
-          label={categoryList?.find((item) => item._id === row.category)?.name || ''}
+          label={row?.category?.name || 'Uncategorized'}
           sx={{
             fontWeight: 600,
             color: (theme) => theme.palette.warning.main,
